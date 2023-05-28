@@ -27,8 +27,8 @@ if ((await sc.signInAll()).length == 0) console.log('无可签到活动')
 
 ### 500 Server internal error处理
 
-保存登录成功后的sessionId，并在下一次使用调用
-不处理也行，等几分钟就是了
+保存登录成功后的sessionId，并在下一次使用调用  
+不处理也行，等几分钟就是了  
 
 ```js
 if (!fs.existsSync('cache.txt')) {
