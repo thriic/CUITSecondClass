@@ -13,31 +13,37 @@ import Webvpn from "./webvpn.js";
  */
 
 export class SecondClass {
+    /** @type {Webvpn} */
+    #webvpn
+
     /**
-    * 
-    * @param {Webvpn} webvpn webvpn
-    * @param {number|undefined} account 学号
+    * @param {number} account 学号
+    * @param {string} password 密码
     */
-    constructor(webvpn, account) {
-        this.account = account ?? webvpn.id
-        this.webvpn = webvpn
+    constructor(account, password) {
+        this.account = account
+        this.password = password
     }
+
 
     /**
     * 登录第二课堂
-    * @param {Activity} activity
-    * @returns {Promise<any>} 一定返回'请求成功'
+    * @param {string|undefined} sessionId 可选
+    * @param {(id:string) => any} saveSessionId
+    * @returns {Promise<SecondClass>} 
     */
-    async login() {
-        await this.webvpn.login()
+    async login(sessionId, saveSessionId) {
+        this.#webvpn = new Webvpn(this.account, this.password, sessionId)
+        await this.#webvpn.login()
+        saveSessionId && saveSessionId(this.#webvpn.twfID)
+
         return new Promise((resolve, reject) => {
             // http://ekty-cuit-edu-cn.webvpn.cuit.edu.cn:8118/#/pages/home/login
             request('http://ekt-cuit-edu-cn.webvpn.cuit.edu.cn:8118/api/login?sf_request_type=ajax',
                 {
                     method: 'POST',
                     headers: {
-                        "sdp-app-session": this.webvpn.twfID,
-                        "Proxy-Connection": 'keep-alive'
+                        "sdp-app-session": this.#webvpn.twfID
                     },
                     followRedirect: false,
                     json: true,
@@ -57,11 +63,14 @@ export class SecondClass {
                         reject(body.message)
                     } else {
                         this.token = body.data
-                        resolve(body.data)
+                        resolve(this)
                     }
                 })
         })
     }
+
+
+
 
     /**
      * 获取用户信息
@@ -74,7 +83,7 @@ export class SecondClass {
                     method: 'GET',
                     json: true,
                     headers: {
-                        "sdp-app-session": this.webvpn.twfID,
+                        "sdp-app-session": this.#webvpn.twfID,
                         'Authorization': `Bearer ${this.token}`
                     }
                 }, (error, response, body) => {
@@ -106,7 +115,7 @@ export class SecondClass {
                 {
                     method: 'POST',
                     headers: {
-                        "sdp-app-session": this.webvpn.twfID,
+                        "sdp-app-session": this.#webvpn.twfID,
                         'Authorization': `Bearer ${this.token}`
                     },
                     json: true,
@@ -133,25 +142,25 @@ export class SecondClass {
 
     /**
     * 获取分数(诚信值，已完成活动，积分)
-    * @returns {Promise<any>}
+    * @returns {Promise<{ score: number, item: number, integrity_value: number, activity: number }>}
     */
     score() {
         return new Promise(async (resolve, reject) => {
-            this.id ?? await this.user()
-            request(`http://ekt-cuit-edu-cn.webvpn.cuit.edu.cn:8118/api/studentScore/appDataInfo?userId=${this.id}&sf_request_type=ajax`,
+            this.info.id ?? await this.user()
+            request(`http://ekt-cuit-edu-cn.webvpn.cuit.edu.cn:8118/api/studentScore/appDataInfo?userId=${this.info.id}&sf_request_type=ajax`,
                 {
                     method: 'GET',
                     json: true,
                     headers: {
-                        "sdp-app-session": this.webvpn.twfID,
+                        "sdp-app-session": this.#webvpn.twfID,
                         'Authorization': `Bearer ${this.token}`
                     }
                 }, (error, response, body) => {
                     if (error) {
                         reject(error)
                     }
-                    //console.log(body)
-                    if (body.message != '请求成功') reject(true)
+                    console.log(body)
+                    if (body.message != '请求成功') reject(body.message)
                     // {score: 3, item: 0, integrity_value: 70, activity: 2}
                     resolve(body.data)
 
@@ -171,7 +180,7 @@ export class SecondClass {
                 {
                     method: 'POST',
                     headers: {
-                        "sdp-app-session": this.webvpn.twfID,
+                        "sdp-app-session": this.#webvpn.twfID,
                         'Authorization': `Bearer ${this.token}`
                     },
                     json: true,
@@ -209,7 +218,7 @@ export class SecondClass {
                     method: 'GET',
                     json: true,
                     headers: {
-                        "sdp-app-session": this.webvpn.twfID,
+                        "sdp-app-session": this.#webvpn.twfID,
                         'Authorization': `Bearer ${this.token}`
                     }
                 }, (error, response, body) => {
@@ -233,7 +242,7 @@ export class SecondClass {
                     method: 'GET',
                     json: true,
                     headers: {
-                        "sdp-app-session": this.webvpn.twfID,
+                        "sdp-app-session": this.#webvpn.twfID,
                         'Authorization': `Bearer ${this.token}`
                     }
                 }, (error, response, body) => {
@@ -268,7 +277,7 @@ export class SecondClass {
                     method: 'GET',
                     json: true,
                     headers: {
-                        "sdp-app-session": this.webvpn.twfID,
+                        "sdp-app-session": this.#webvpn.twfID,
                         'Authorization': `Bearer ${this.token}`
                     }
                 }, (error, response, body) => {
@@ -324,4 +333,4 @@ export class SecondClass {
     }
 }
 export { Webvpn }
-export default { SecondClass, Webvpn }
+export default SecondClass

@@ -1,5 +1,7 @@
 import { SecondClass, Webvpn } from "./src/secondClass.js";
-import * as config from "./src/config.js";
+import fs from 'fs'
+
+
 
 let args = process.argv.slice(2);
 if (args[0] == undefined || args[1] == undefined) {
@@ -8,20 +10,22 @@ if (args[0] == undefined || args[1] == undefined) {
     let auth = { id: parseInt(args[0]), password: args[1] };
     (async () => {
         try {
-            let conf = config.readById(auth.id)
-            let twfid = conf?.twfid
-
-            let webvpn = new Webvpn(auth.id, auth.password, twfid)
-
-            config.updateById(auth.id, webvpn.twfID)
-
+            //读取缓存的sessionId
+            if (!fs.existsSync('cache.txt')) {
+                fs.writeFileSync('cache.txt', '')
+            }
+            let sessionId = fs.readFileSync('cache.txt', 'utf-8') || args[2]
 
             console.log('尝试登录第二课堂')
-            let sc = new SecondClass(webvpn, 2022101063)
-            await sc.login()
-            console.log('登录成功,token', sc.token)
+            let sc = await new SecondClass(auth.id, auth.password).login(sessionId, (id) => {
+                fs.writeFileSync('cache.txt', id)
+            })
+            console.log('登录成功，token', sc.token)
+            
             let info = await sc.user()
+            let score = await sc.score()
             console.log(`欢迎,${info.name}(${info.id})`)
+            console.log(`当前积分${score.score} 诚信值${score.integrity_value} 已完成活动${score.activity}`)
 
             console.log('尝试报名')
             if ((await sc.signAll()).length == 0) console.log('无可报名活动')

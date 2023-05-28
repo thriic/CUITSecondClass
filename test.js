@@ -1,5 +1,4 @@
 import {SecondClass, Webvpn} from "./src/secondClass.js";
-import * as config from "./src/config.js";
 
 
 let auth = { id: 123, password: '123' }
@@ -7,19 +6,14 @@ let auth = { id: 123, password: '123' }
 
 let test = async () => {
     try {
-        let conf = config.readById(auth.id)
-        let twfid = conf?.twfid
 
-        let webvpn = new Webvpn(auth.id, auth.password, twfid)
+        let webvpn = new Webvpn(auth.id, auth.password)
         await webvpn.login()
-
-        config.updateById(auth.id, webvpn.twfID)
-
 
         console.log('尝试登录第二课堂')
         let sc = new SecondClass(webvpn, 2022101063)
         await sc.login()
-        console.log('登录成功,token', sc.token)
+        console.log('登录成功,twfid',sc.webvpn.twfID,'\ntoken', sc.token)
         let info = await sc.user()
         console.log(`欢迎,${info.name}(${info.id})`)
 

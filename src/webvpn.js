@@ -41,6 +41,7 @@ export class Webvpn {
     async login() {
         //检查是否为登录状态
         if (await this.checkLogin()) return
+        console.log('登录webvpn')
         let { TwfID, CSRF_RAND_CODE, RSA_ENCRYPT_KEY } = await this.auth()
         const RSA = new RSAKey()
         RSA.setPublic(RSA_ENCRYPT_KEY, '10001')
@@ -96,7 +97,7 @@ export class Webvpn {
 
     checkLogin() {
         return new Promise((resolve, reject) => {
-            if (this.twfID == undefined) resolve(false)
+            if (this.twfID == undefined || this.twfID == '') resolve(false)
             request('https://webvpn.cuit.edu.cn/por/svpnSetting.csp?apiversion=1', {
                 headers: {
                     'Cookie': `ENABLE_RANDCODE=0; TWFID=${this.twfID}`
