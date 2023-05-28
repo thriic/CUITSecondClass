@@ -2,7 +2,7 @@
   "name": "secondclass",
   "version": "1.0.0",
   "description": "",
-  "main": "secondClass.js",
+  "main": "./src/secondClass.js",
   "type": "module",
   "scripts": {
     "test": "node test.js",

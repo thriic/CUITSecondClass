@@ -1,5 +1,5 @@
-import { SecondClass, Webvpn } from "./secondClass.js";
-import * as config from "./config.js";
+import { SecondClass, Webvpn } from "./src/secondClass.js";
+import * as config from "./src/config.js";
 
 let args = process.argv.slice(2);
 if (args[0] == undefined || args[1] == undefined) {
@@ -20,8 +20,8 @@ if (args[0] == undefined || args[1] == undefined) {
             let sc = new SecondClass(webvpn, 2022101063)
             await sc.login()
             console.log('登录成功,token', sc.token)
-            // let info = await sc.user()
-            // console.log(`欢迎,${info.name}(${info.id})`)
+            let info = await sc.user()
+            console.log(`欢迎,${info.name}(${info.id})`)
 
             console.log('尝试报名')
             if ((await sc.signAll()).length == 0) console.log('无可报名活动')

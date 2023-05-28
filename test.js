@@ -1,5 +1,5 @@
-import {SecondClass, Webvpn} from "./secondClass.js";
-import * as config from "./config.js";
+import {SecondClass, Webvpn} from "./src/secondClass.js";
+import * as config from "./src/config.js";
 
 
 let auth = { id: 123, password: '123' }
