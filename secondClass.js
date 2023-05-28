@@ -1,4 +1,5 @@
 import request from "request";
+import Webvpn from "./webvpn.js";
 
 
 /**
@@ -12,11 +13,24 @@ import request from "request";
  */
 
 export class SecondClass {
-    constructor(account, twfID) {
-        this.twfID = twfID
-        this.account = account
+    /**
+    * 
+    * @param {Webvpn} webvpn webvpn
+    * @param {number|undefined} account 学号
+    */
+    constructor(webvpn, account) {
+        this.twfID = webvpn.twfID
+        this.account = account ?? webvpn.id
+        this.webvpn = webvpn
     }
+
+    /**
+    * 登录第二课堂
+    * @param {Activity} activity
+    * @returns {Promise<any>} 一定返回'请求成功'
+    */
     login() {
+        this.webvpn.login()
         return new Promise((resolve, reject) => {
             // http://ekty-cuit-edu-cn.webvpn.cuit.edu.cn:8118/#/pages/home/login
             request('http://ekt-cuit-edu-cn.webvpn.cuit.edu.cn:8118/api/login?sf_request_type=ajax',
@@ -50,6 +64,10 @@ export class SecondClass {
         })
     }
 
+    /**
+     * 获取用户信息
+     * @returns {Promise<any>} 用户信息
+     */
     user() {
         return new Promise((resolve, reject) => {
             request('http://ekt-cuit-edu-cn.webvpn.cuit.edu.cn:8118/api/getLoginUser?sf_request_type=ajax',
@@ -113,6 +131,11 @@ export class SecondClass {
                 })
         })
     }
+
+    /**
+    * 获取分数(诚信值，已完成活动，积分)
+    * @returns {Promise<any>}
+    */
     score() {
         return new Promise(async (resolve, reject) => {
             this.id ?? await this.user()
@@ -301,4 +324,5 @@ export class SecondClass {
         return signInActivities
     }
 }
-export default SecondClass
+export { Webvpn }
+export default { SecondClass, Webvpn }

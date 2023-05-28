@@ -1,11 +1,10 @@
 import {SecondClass, Webvpn} from "./secondClass.js";
 import * as config from "./config.js";
 
-
-let auth = { id: 123, password: '123' }
-//学号 密码 用于登录webvpn
-
-let test = async () => {
+let args = process.argv.slice(2);
+if(args[0] == undefined || args[1] == undefined) console.log('npm start 学号 密码 如:npm start 123 aab123')
+let auth = {id: parseInt(args[0]), password: args[1]};
+(async () => {
     try {
         let conf = config.readById(auth.id)
         let twfid = conf?.twfid
@@ -28,8 +27,6 @@ let test = async () => {
         console.log('尝试签到')
         if ((await sc.signInAll()).length == 0) console.log('无可签到活动')
     } catch (e) {
-        console.error('error', e)
+        console.error('error:', e)
     }
-}
-
-test()
+})();

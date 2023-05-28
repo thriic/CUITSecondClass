@@ -5,10 +5,15 @@
   "main": "secondClass.js",
   "type": "module",
   "scripts": {
-    "test": "node test.js"
+    "test": "node test.js",
+    "start": "node app.js"
   },
   "author": "thryan",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Thryanii/secondClass.git"
+  },
   "dependencies": {
     "fs": "^0.0.1-security",
     "jsencrypt": "^3.3.2",

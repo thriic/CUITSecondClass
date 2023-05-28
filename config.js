@@ -28,7 +28,7 @@ export function updateById(id, twfid) {
 
         // 更新元素的属性
         const element = data[index];
-        element[key] = value;
+        element.twfid = twfid;
         fs.writeFileSync('./config.json', JSON.stringify(data, null, 2));
     } catch (err) {
         console.log(err)
