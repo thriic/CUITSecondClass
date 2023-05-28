@@ -19,7 +19,6 @@ export class SecondClass {
     * @param {number|undefined} account 学号
     */
     constructor(webvpn, account) {
-        this.twfID = webvpn.twfID
         this.account = account ?? webvpn.id
         this.webvpn = webvpn
     }
@@ -29,15 +28,15 @@ export class SecondClass {
     * @param {Activity} activity
     * @returns {Promise<any>} 一定返回'请求成功'
     */
-    login() {
-        this.webvpn.login()
+    async login() {
+        await this.webvpn.login()
         return new Promise((resolve, reject) => {
             // http://ekty-cuit-edu-cn.webvpn.cuit.edu.cn:8118/#/pages/home/login
             request('http://ekt-cuit-edu-cn.webvpn.cuit.edu.cn:8118/api/login?sf_request_type=ajax',
                 {
                     method: 'POST',
                     headers: {
-                        "sdp-app-session": this.twfID,
+                        "sdp-app-session": this.webvpn.twfID,
                         "Proxy-Connection": 'keep-alive'
                     },
                     followRedirect: false,
@@ -75,7 +74,7 @@ export class SecondClass {
                     method: 'GET',
                     json: true,
                     headers: {
-                        "sdp-app-session": this.twfID,
+                        "sdp-app-session": this.webvpn.twfID,
                         'Authorization': `Bearer ${this.token}`
                     }
                 }, (error, response, body) => {
@@ -107,7 +106,7 @@ export class SecondClass {
                 {
                     method: 'POST',
                     headers: {
-                        "sdp-app-session": this.twfID,
+                        "sdp-app-session": this.webvpn.twfID,
                         'Authorization': `Bearer ${this.token}`
                     },
                     json: true,
@@ -144,7 +143,7 @@ export class SecondClass {
                     method: 'GET',
                     json: true,
                     headers: {
-                        "sdp-app-session": this.twfID,
+                        "sdp-app-session": this.webvpn.twfID,
                         'Authorization': `Bearer ${this.token}`
                     }
                 }, (error, response, body) => {
@@ -172,7 +171,7 @@ export class SecondClass {
                 {
                     method: 'POST',
                     headers: {
-                        "sdp-app-session": this.twfID,
+                        "sdp-app-session": this.webvpn.twfID,
                         'Authorization': `Bearer ${this.token}`
                     },
                     json: true,
@@ -210,7 +209,7 @@ export class SecondClass {
                     method: 'GET',
                     json: true,
                     headers: {
-                        "sdp-app-session": this.twfID,
+                        "sdp-app-session": this.webvpn.twfID,
                         'Authorization': `Bearer ${this.token}`
                     }
                 }, (error, response, body) => {
@@ -234,7 +233,7 @@ export class SecondClass {
                     method: 'GET',
                     json: true,
                     headers: {
-                        "sdp-app-session": this.twfID,
+                        "sdp-app-session": this.webvpn.twfID,
                         'Authorization': `Bearer ${this.token}`
                     }
                 }, (error, response, body) => {
@@ -269,7 +268,7 @@ export class SecondClass {
                     method: 'GET',
                     json: true,
                     headers: {
-                        "sdp-app-session": this.twfID,
+                        "sdp-app-session": this.webvpn.twfID,
                         'Authorization': `Bearer ${this.token}`
                     }
                 }, (error, response, body) => {

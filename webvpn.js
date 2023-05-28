@@ -3,7 +3,17 @@ import { parseString } from 'xml2js';
 import RSAKey from './encrypt.js'
 import fs from 'fs'
 
+// RSA部分参考
+// 项目 https://github.com/nonesrc/roach
+// 协议 MIT
+
 export class Webvpn {
+    /**
+    * 
+    * @param {number} id 学号
+    * @param {string} pwd 密码
+    * @param {number|undefined} twfID
+    */
     constructor(id, pwd, twfID) {
         this.id = id
         this.pwd = pwd
