@@ -1,7 +1,16 @@
-import { SecondClass, Webvpn } from "./src/secondClass.js";
+import SecondClass from "./src/secondClass.js"
 import fs from 'fs'
 
+import * as readline from "node:readline/promises"
+import { stdin as input, stdout as output } from "node:process"
 
+const rl = readline.createInterface({ input, output })
+
+import { dirname } from "node:path"
+import { fileURLToPath } from "node:url"
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 let args = process.argv.slice(2);
 if (args[0] == undefined || args[1] == undefined) {
@@ -10,18 +19,20 @@ if (args[0] == undefined || args[1] == undefined) {
     let auth = { id: parseInt(args[0]), password: args[1] };
     (async () => {
         try {
-            //读取缓存的sessionId
+
             if (!fs.existsSync('cache.txt')) {
                 fs.writeFileSync('cache.txt', '')
             }
-            let sessionId = fs.readFileSync('cache.txt', 'utf-8') || args[2]
+            let sessionId = fs.readFileSync('cache.txt', 'utf-8')
 
             console.log('尝试登录第二课堂')
-            let sc = await new SecondClass(auth.id, auth.password).login(sessionId, (id) => {
-                fs.writeFileSync('cache.txt', id)
+            let sc = await new SecondClass(auth.id, auth.password).login(sessionId, async (captchaBuffer) => {
+                fs.writeFileSync('./captcha.gif', captchaBuffer)
+                let captcha = await rl.question(`输入位于${__dirname}的captcha.gif的验证码:`)
+                return captcha
             })
-            console.log('登录成功，token', sc.token)
-            
+            fs.writeFileSync('cache.txt', sc.sessionId)
+
             let info = await sc.user()
             let score = await sc.score()
             console.log(`欢迎,${info.name}(${info.id})`)
@@ -34,5 +45,6 @@ if (args[0] == undefined || args[1] == undefined) {
         } catch (e) {
             console.error('error:', e)
         }
-    })();
+        rl.close()
+    })()
 }

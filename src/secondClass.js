@@ -17,25 +17,32 @@ export class SecondClass {
     #webvpn
 
     /**
-    * @param {number} account 学号
-    * @param {string} password 密码
-    */
+     * @param {number} account 学号
+     * @param {string} password 密码
+     */
     constructor(account, password) {
         this.account = account
         this.password = password
     }
 
+    /**
+     * sessionId,用于保持webvpn进程
+     * @returns {number | undefined} 
+     */
+    get sessionId() {
+        return this.#webvpn.twfID
+    }
+
 
     /**
-    * 登录第二课堂
-    * @param {string|undefined} sessionId 可选
-    * @param {(id:string) => any} saveSessionId
-    * @returns {Promise<SecondClass>} 
-    */
-    async login(sessionId, saveSessionId) {
+     * 登录第二课堂
+     * @param {string|undefined} sessionId 可选
+     * @param {(captchaBuffer:Buffer) => Promise<string>} onCaptcha
+     * @returns {Promise<SecondClass>} 
+     */
+    async login(sessionId, onCaptcha) {
         this.#webvpn = new Webvpn(this.account, this.password, sessionId)
-        await this.#webvpn.login()
-        saveSessionId && saveSessionId(this.#webvpn.twfID)
+        await this.#webvpn.login(0, onCaptcha)
 
         return new Promise((resolve, reject) => {
             // http://ekty-cuit-edu-cn.webvpn.cuit.edu.cn:8118/#/pages/home/login
@@ -60,7 +67,7 @@ export class SecondClass {
                         return
                     }
                     if (body.message != '请求成功') {
-                        reject(body.message)
+                        reject(new Error(body.message))
                     } else {
                         this.token = body.data
                         resolve(this)
@@ -129,9 +136,8 @@ export class SecondClass {
                     if (typeof body == 'string' && body.includes('Server internal error')) {
                         reject('500 Server internal error');
                     }
-                    //console.log(body)
                     if (body.message != '请求成功') {
-                        reject(body.message)
+                        reject(new Error(body.message))
                     } else {
                         // { msg: '报名成功', code: '1' }
                         resolve(body.data)
@@ -141,9 +147,9 @@ export class SecondClass {
     }
 
     /**
-    * 获取分数(诚信值，已完成活动，积分)
-    * @returns {Promise<{ score: number, item: number, integrity_value: number, activity: number }>}
-    */
+     * 获取分数(诚信值，已完成活动，积分)
+     * @returns {Promise<{ score: number, item: number, integrity_value: number, activity: number }>}
+     */
     score() {
         return new Promise(async (resolve, reject) => {
             this.info.id ?? await this.user()
@@ -159,10 +165,9 @@ export class SecondClass {
                     if (error) {
                         reject(error)
                     }
-                    console.log(body)
-                    if (body.message != '请求成功') reject(body.message)
+                    if (body.message != '请求成功') resolve(body.message)
                     // {score: 3, item: 0, integrity_value: 70, activity: 2}
-                    resolve(body.data)
+                    else resolve(body.data)
 
                 })
         })
@@ -171,7 +176,7 @@ export class SecondClass {
     /**
      * 完成签到签退(签到签退可重复进行)
      * @param {Activity} activity
-     * @returns {Promise<any>} 一定返回'请求成功'
+     * @returns {Promise<any>} 
      */
     signIn(activity) {
         return new Promise(async (resolve, reject) => {
@@ -189,19 +194,15 @@ export class SecondClass {
                         signInTime: new Date(new Date(activity.startTime).getTime() + 3600 * 1000).toLocaleString().replace(/\//g, '-'),
                         signOutTime: new Date(new Date(activity.startTime).getTime() + 3700 * 1000).toLocaleString().replace(/\//g, '-')
                     }
-                }, (error, response, body) => {
+                }, (error, _response, body) => {
                     if (error) {
                         reject(error)
                     }
                     if (typeof body == 'string' && body.includes('Server internal error')) {
-                        reject('500 Server internal error')
+                        reject(new Error('500 Server internal error'))
                     }
-                    if (body.message != '请求成功') {
-                        reject(body.message)
-                    } else {
-                        resolve(body)
-                    }
-
+                    else if (body.message != '请求成功') resolve(body.message)
+                    else resolve(body)
                 })
         })
     }
@@ -225,15 +226,15 @@ export class SecondClass {
                     if (error) {
                         reject(error)
                     }
-                    if (body.message != '请求成功') reject(true)
-                    resolve({ id: body.data.rows[0].id, isSign: body.data.rows[0].signOutTime != null && body.data.rows[0].signInTime != null })
+                    if (body.message != '请求成功') reject(new Error(body.message))
+                    else resolve({ id: body.data.rows[0].id, isSign: body.data.rows[0].signOutTime != null && body.data.rows[0].signInTime != null })
                 })
         })
     }
 
     /**
-     * 获取第二课堂可报名活动列表
-     * @returns {Promise<Activity[]>} 活动列表
+     * 获取第二课堂可报名活动
+     * @returns {Promise<Activity[]>} 活动
      */
     activities() {
         return new Promise((resolve, reject) => {
@@ -256,7 +257,7 @@ export class SecondClass {
                         /** @type Activity[] */
                         let activities = []
                         body.data.rows.forEach(element => {
-                            if (element == undefined || element.id.includes('*')) return
+                            if (element == undefined || element.id.includes('*')) return;
                             activities.push({ id: element.id, activityStatus: element.activityStatus, activityName: element.activityName, startTime: element.startTime, endTime: element.endTime, isSign: element.isSign })
                         })
                         resolve(activities)
@@ -267,8 +268,8 @@ export class SecondClass {
     }
 
     /**
-     * 获取第二课堂可报名活动列表
-     * @returns {Promise<Activity[]>} 活动列表
+     * 获取参加的活动
+     * @returns {Promise<Activity[]>} 活动
      */
     myActivities() {
         return new Promise((resolve, reject) => {
@@ -280,7 +281,7 @@ export class SecondClass {
                         "sdp-app-session": this.#webvpn.twfID,
                         'Authorization': `Bearer ${this.token}`
                     }
-                }, (error, response, body) => {
+                }, (error, _response, body) => {
                     if (error) {
                         reject(error)
                     }
@@ -290,7 +291,7 @@ export class SecondClass {
                         /** @type Activity[] */
                         let activities = []
                         body.data.forEach(element => {
-                            if (element == undefined || element.id.includes('*')) return
+                            if (element == undefined || element.id.includes('*')) return;
                             activities.push({ id: element.id, activityStatus: element.activityStatus, activityName: element.activityName, startTime: element.startTime, endTime: element.endTime, isSign: element.isSign })
                         })
                         resolve(activities)
@@ -324,8 +325,8 @@ export class SecondClass {
         let signInActivities = []
         let activities = await this.myActivities()
         for (let element of activities) {
-            if (!['0', '1', '2'].includes(element.activityStatus)) continue;
-            if ((await this.signInfo(element.id)).isSign) continue;
+            if (!['0', '1', '2'].includes(element.activityStatus)) continue
+            if ((await this.signInfo(element.id)).isSign) continue
             console.log(`"${element.activityName}"(${element.id})` + (await this.signIn(element)).message)
             signInActivities.push(element)
         }

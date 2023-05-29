@@ -1,9 +1,9 @@
-# secondClass
+# cuit-secondclass
 
-cuit 第二课堂脚本 自动报名并签到签退  
-  
-## 注意事项
-多次登录webvpn可能触发验证码(未实现处理)  
+成信专 第二课堂 自动报名并签到签退  
+
+## 注意事项  
+签到签退时，概率因为返回活动id不全无法完成(重试解决)  
 使用脚本前请勿在网页端登录二课，否则会500 Server internal error(等几分钟就行)  
 
 ## 直接使用
@@ -36,9 +36,20 @@ if (!fs.existsSync('cache.txt')) {
 }
 let sessionId = fs.readFileSync('cache.txt', 'utf-8')
 
-let sc = await new SecondClass(114514, 'abcd1234').login(sessionId, (id) => {
-    fs.writeFileSync('cache.txt', id)
-})
+let sc = await new SecondClass(114514, 'abcd1234').login(sessionId)
+fs.writeFileSync('cache.txt', sc.sessionId)
 
 ```
 
+### 处理webvpn验证码
+
+```js
+
+let sc = new SecondClass(auth.id, auth.password)
+sc.login(sessionId, async (captchaBuffer) => {
+    fs.writeFileSync('./captcha.gif', captchaBuffer) //写入文件
+    let captcha = await balabala/*自行处理*/
+    return captcha
+})
+
+```
