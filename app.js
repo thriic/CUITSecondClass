@@ -17,20 +17,18 @@ if (args[0] == undefined || args[1] == undefined) {
     console.log('npm start 学号 密码 如:npm start 123 aab123')
 } else {
     let auth = { id: parseInt(args[0]), password: args[1] };
-    (async () => {
-        try {
+    try {
+        if (!fs.existsSync('cache.txt')) {
+            fs.writeFileSync('cache.txt', '')
+        }
+        let sessionId = fs.readFileSync('cache.txt', 'utf-8')
 
-            if (!fs.existsSync('cache.txt')) {
-                fs.writeFileSync('cache.txt', '')
-            }
-            let sessionId = fs.readFileSync('cache.txt', 'utf-8')
-
-            console.log('尝试登录第二课堂')
-            let sc = await new SecondClass(auth.id, auth.password).login(sessionId, async (captchaBuffer) => {
-                fs.writeFileSync('./captcha.gif', captchaBuffer)
-                let captcha = await rl.question(`输入位于${__dirname}的captcha.gif的验证码:`)
-                return captcha
-            })
+        console.log('尝试登录第二课堂')
+        new SecondClass(auth.id, auth.password).login(sessionId, async (captchaBuffer) => {
+            fs.writeFileSync('./captcha.gif', captchaBuffer)
+            let captcha = await rl.question(`输入位于${__dirname}的captcha.gif的验证码:`)
+            return captcha
+        }).then(async (sc) => {
             fs.writeFileSync('cache.txt', sc.sessionId)
 
             let info = await sc.user()
@@ -42,9 +40,9 @@ if (args[0] == undefined || args[1] == undefined) {
             if ((await sc.signAll()).length == 0) console.log('无可报名活动')
             console.log('尝试签到')
             if ((await sc.signInAll()).length == 0) console.log('无可签到活动')
-        } catch (e) {
-            console.error('error:', e)
-        }
-        rl.close()
-    })()
+        })
+    } catch (e) {
+        console.error('error:', e)
+    }
+    rl.close()
 }

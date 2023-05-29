@@ -1,6 +1,6 @@
-# cuit-secondclass
+# CUITSecondClass
 
-成信专 第二课堂 自动报名并签到签退  
+成信专cuit 第二课堂 自动报名并签到签退  
 通过webvpn登录,无需校内网  
 
 ## 注意事项  
@@ -8,11 +8,16 @@
 使用脚本前请勿在网页端登录二课，否则会500 Server internal error(等几分钟就行)  
 
 ## 直接使用
+密码为webvpn(教务处)密码，用于登录webvpn    
 
 ```sh
 npm i
 npm start 学号 密码
 ```
+
+## 测试环境
+
+Win11 Nodejs v18.12.0 校外网
 
 ## 作为模块使用
 
