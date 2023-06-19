@@ -2,7 +2,7 @@
 
 成信专cuit 第二课堂 自动报名并签到签退  
 通过webvpn登录,无需校内网  
-Android(Kotlin)实现: [SecondClass](https://github.com/Thryanii/SecondClass)
+Android(Kotlin)实现: [SecondClass](https://github.com/thriic/SecondClass)
 
 ## 注意事项  
 签到签退时，概率因为返回活动id不全无法完成(重试解决)  
